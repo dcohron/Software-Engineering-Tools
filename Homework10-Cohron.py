@@ -44,6 +44,7 @@ class School():
         self.school = school
         self.students = list()
         self.instructors = list()
+        self.majors = defaultdict()
 
     def read_students(self, file_name):
         """Read the student input file."""
@@ -122,6 +123,23 @@ class School():
                         item.courses[cour] += 1
         return None
 
+    def read_majors(self, file_name):
+        # test that can read file
+        try:
+            fhand = open(file_name, 'r')
+        except IOError:
+            print("ERROR: cannot read file '%s'." % file_name)
+            exit(99)
+
+        with fhand:
+            for line in fhand:
+                words = line.strip().split("\t")
+                dept, required, course = words[0], words[1], words[2]
+                self.majors[dept] = Major(dept)
+                self.majors[dept].add_course(required, course)
+        # print(self.majors)
+        return None
+
     def student_table(self):
         """Get pretty table as output for students"""
         # 'Registered' instead of 'Completed' as may not have grades for all classes yet
@@ -145,6 +163,17 @@ class School():
             class_list = list(item.courses.keys())
             for subject in class_list:
                 x.add_row([str(item.CWID), str(item.name), str(item.dept), subject, item.courses[subject]])
+        print(x)
+        return None
+
+    def major_table(self):
+        """Get pretty table as output of majors"""
+        print()
+        print("Major Summary:")
+        header = ['Dept', 'Required', 'Elective']
+        x = PT(header)
+        for key in self.majors.keys():
+            x.add_row([key, self.majors[key].required_courses, self.majors[key].elective_courses])
         print(x)
         return None
 
@@ -184,20 +213,48 @@ class Instructor():
         return
 
 
+class Major():
+    """Class to store the required and elective requirements of a major."""
+    def __init__(self, dept):
+        """Instantiate and instance of the Major class."""
+        self.dept = dept
+        self.required_courses = set()
+        self.elective_courses = set()
+
+    def add_course(self, required, course):
+        print(required, "   ", course)
+        if required == 'R':
+            self.required_courses.add(course)
+        elif required == 'E':
+            self.elective_courses.add(course)
+        else:
+            print("ERROR: course type is incorrect for course %s" %course)
+        return None
+
+
 def main():
     """Main program logic."""
 
     Stevens = School('Stevens')
 
     # input file paths
-    input_student = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Data/students.txt"
-    input_instructors = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Data/instructors.txt"
-    input_grades = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Data/grades.txt"
+    input_student = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Software-Engineering-Tools/Data/students.txt"
+    input_instructors = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Software-Engineering-Tools/Data/instructors.txt"
+    input_grades = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Software-Engineering-Tools/Data/grades.txt"
+    input_grades2 = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Software-Engineering-Tools/Data/grades2.txt"
+    input_majors = "/Users/nickcohron/Stevens/Software Engineering Tools & Techniques/Code/Software-Engineering-Tools/Data/majors2.txt"
 
     # read in data
     Stevens.read_students(input_student)
     Stevens.read_instructors(input_instructors)
-    Stevens.read_grades(input_grades)
+    Stevens.read_grades(input_grades2)
+    Stevens.read_majors(input_majors)
+
+    print(Stevens.majors['SFEN'].required_courses)
+    print(Stevens.majors['SYEN'].elective_courses)
+
+    # print majors table
+    Stevens.major_table()
 
     # print student table
     Stevens.student_table()
