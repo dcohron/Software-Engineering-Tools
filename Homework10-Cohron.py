@@ -63,7 +63,6 @@ class School():
                     print("ERROR: line formatted incorrectly in '%s'. Continuing to next line." % file_name)
                     continue
                 self.students.append(new_instance)
-        print(self.students)
         return None
 
     def read_instructors(self, file_name):
@@ -84,7 +83,6 @@ class School():
                     print("ERROR: line formatted incorrectly in '%s'. Continuing to next line." % file_name)
                     continue
                 self.instructors.append(instance_name)
-        print(self.instructors)
         return
 
     def read_grades(self, file_name):
