@@ -44,7 +44,7 @@ class School():
         self.school = school
         self.students = list()
         self.instructors = list()
-        self.majors = defaultdict()
+        self.majors = defaultdict(Major)
 
     def read_students(self, file_name):
         """Read the student input file."""
@@ -135,9 +135,10 @@ class School():
             for line in fhand:
                 words = line.strip().split("\t")
                 dept, required, course = words[0], words[1], words[2]
-                self.majors[dept] = Major(dept)
+                print(dept, required, course)
+                # self.majors[dept] = Major(dept)
                 self.majors[dept].add_course(required, course)
-        # print(self.majors)
+
         return None
 
     def student_table(self):
@@ -215,9 +216,8 @@ class Instructor():
 
 class Major():
     """Class to store the required and elective requirements of a major."""
-    def __init__(self, dept):
+    def __init__(self):
         """Instantiate and instance of the Major class."""
-        self.dept = dept
         self.required_courses = set()
         self.elective_courses = set()
 
@@ -225,6 +225,8 @@ class Major():
         print(required, "   ", course)
         if required == 'R':
             self.required_courses.add(course)
+            print(required, course)
+            print(self.required_courses)
         elif required == 'E':
             self.elective_courses.add(course)
         else:
@@ -250,8 +252,10 @@ def main():
     Stevens.read_grades(input_grades2)
     Stevens.read_majors(input_majors)
 
-    print(Stevens.majors['SFEN'].required_courses)
-    print(Stevens.majors['SYEN'].elective_courses)
+    # Stevens.majors['SYEN'].add_course('R', 'nonsense')
+    # print()
+    # print(Stevens.majors['SYEN'].required_courses)
+    # print(Stevens.majors['SFEN'].elective_courses)
 
     # print majors table
     Stevens.major_table()
