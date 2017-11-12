@@ -135,21 +135,37 @@ class School():
             for line in fhand:
                 words = line.strip().split("\t")
                 dept, required, course = words[0], words[1], words[2]
-                print(dept, required, course)
-                # self.majors[dept] = Major(dept)
                 self.majors[dept].add_course(required, course)
-
         return None
+
+
+    def courses_remaining(self, student):
+        """Method to calculate the courses remaining, both required and elective."""
+        required = self.majors[student.major].required_courses
+        elective = self.majors[student.major].elective_courses
+        passing_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C']
+        passed_courses = set()
+
+        for course, grade in student.courses.items():
+            if grade in passing_grades:
+                passed_courses.add(course)
+        if len(elective.intersection(passed_courses)) > 0:
+            elective_remaining = []
+        else:
+            elective_remaining = elective
+        return(passed_courses, required.difference(passed_courses), elective_remaining)
+
 
     def student_table(self):
         """Get pretty table as output for students"""
-        # 'Registered' instead of 'Completed' as may not have grades for all classes yet
         print()
         print("Student Summary:")
-        header = ["CWID", "Name", "Major", "Registered Courses"]
+        header = ["CWID", "Name", "Major", "Courses Completed w/ grade >= C", "Remaining Required", "Remaining Electives"]
         x = PT(header)
         for item in self.students:
-            x.add_row([str(item.CWID), str(item.name), str(item.major), sorted(list(item.courses.keys()))])
+            # First get difference between required and completed classes passed satisfactorily (grade >= 'C')
+            passed_courses, required_remaining, elective_remaining = self.courses_remaining(item)
+            x.add_row([str(item.CWID), str(item.name), str(item.major), sorted(passed_courses), sorted(required_remaining), sorted(elective_remaining)])
         print(x)
         return None
 
@@ -174,7 +190,7 @@ class School():
         header = ['Dept', 'Required', 'Elective']
         x = PT(header)
         for key in self.majors.keys():
-            x.add_row([key, self.majors[key].required_courses, self.majors[key].elective_courses])
+            x.add_row([key, sorted(self.majors[key].required_courses), sorted(self.majors[key].elective_courses)])
         print(x)
         return None
 
@@ -186,15 +202,17 @@ class Student():
         self.CWID = CWID
         self.name = name
         self.major = major
-        self.courses = dict()  # key = course number, value = grade received
+        self.courses = dict()  # key = course name, value = grade received
 
     def __str__(self):
         """Returns a string for the student."""
         return (str(self.CWID) + " " + str(self.name) + " " +  str(self.major))
 
     def add_course(self, course, grade='NA'):
+        """Method to add a course to a dictionary of courses key = course name, value = grade."""
         self.courses[course] = grade
         return
+
 
 class Instructor():
     """Class to store the professor data."""
@@ -210,6 +228,7 @@ class Instructor():
         return (str(self.CWID) + " " + str(self.name) + " " + str(self.dept))
 
     def add_student(self):
+        """Method to add a student to a course count."""
         self.courses[course] += 1
         return
 
@@ -222,11 +241,9 @@ class Major():
         self.elective_courses = set()
 
     def add_course(self, required, course):
-        print(required, "   ", course)
+        """Method to add a required or elective course to a major."""
         if required == 'R':
             self.required_courses.add(course)
-            print(required, course)
-            print(self.required_courses)
         elif required == 'E':
             self.elective_courses.add(course)
         else:
@@ -236,7 +253,6 @@ class Major():
 
 def main():
     """Main program logic."""
-
     Stevens = School('Stevens')
 
     # input file paths
@@ -252,11 +268,6 @@ def main():
     Stevens.read_grades(input_grades2)
     Stevens.read_majors(input_majors)
 
-    # Stevens.majors['SYEN'].add_course('R', 'nonsense')
-    # print()
-    # print(Stevens.majors['SYEN'].required_courses)
-    # print(Stevens.majors['SFEN'].elective_courses)
-
     # print majors table
     Stevens.major_table()
 
@@ -267,13 +278,12 @@ def main():
     Stevens.instructor_table()
 
 
-
 if __name__ == "__main__":
     # call main program
-    main()
+    # main()
 
     # now call the unit tests
-    # unittest.main(exit=False, verbosity=2)
+    unittest.main(exit=False, verbosity=2)
 
 
 # End of file
