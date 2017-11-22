@@ -1,11 +1,14 @@
 """
 Class:      SSW-810
-Project:    Class #12
+Project:    Homework #12
 Professor:  James Rowland
 Author:     Nick Cohron
-Date:       20 November 2017
-Brief:      In class work
+Date:       22 November 2017
+Brief:      Putting student database on the web.
 """
+
+
+# Goto 127.0.0.1:5000 (root) to see rendered web page
 
 
 from flask import Flask
