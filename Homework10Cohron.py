@@ -19,8 +19,8 @@ class School():
     def __init__(self, school):
         """Instantiate an instance of the class School."""
         self.school = school
-        self.students = list()
-        self.instructors = list()
+        self.students = dict()
+        self.instructors = dict()
         self.majors = defaultdict(Major)
 
     def read_students(self, file_name):
@@ -40,7 +40,7 @@ class School():
                 except IndexError:
                     print("ERROR: line formatted incorrectly in '%s'. Continuing to next line." % file_name)
                     continue
-                self.students.append(new_instance)
+                self.students[words[0]] = new_instance
         return None
 
     def read_instructors(self, file_name):
@@ -60,8 +60,8 @@ class School():
                 except IndexError:
                     print("ERROR: line formatted incorrectly in '%s'. Continuing to next line." % file_name)
                     continue
-                self.instructors.append(instance_name)
-        return
+                self.instructors[words[0]] = instance_name
+        return None
 
     def read_grades(self, file_name):
         """Read the grades input file."""
@@ -92,12 +92,16 @@ class School():
                     continue
 
                 # I think that there is a better way to do the following than using loops
-                for item in self.students:
-                    if item.CWID == stud:
-                        item.courses[cour] = grade
-                for item in self.instructors:
-                    if item.CWID == prof:
-                        item.courses[cour] += 1
+                # for item in self.students:
+                #     if item.CWID == stud:
+                #         item.courses[cour] = grade
+                # for item in self.instructors:
+                #     if item.CWID == prof:
+                #         item.courses[cour] += 1
+                #         # item.CWID.add_student(cour)
+                self.students[stud].add_course(cour, grade)
+                self.instructors[prof].add_student(cour)
+
         return None
 
     def read_majors(self, file_name):
@@ -115,15 +119,14 @@ class School():
                 self.majors[dept].add_course(required, course)
         return None
 
-
     def courses_remaining(self, student):
         """Method to calculate the courses remaining, both required and elective."""
-        required = self.majors[student.major].required_courses
-        elective = self.majors[student.major].elective_courses
+        required = self.majors[self.students[student].major].required_courses
+        elective = self.majors[self.students[student].major].elective_courses
         passing_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C']
         passed_courses = set()
 
-        for course, grade in student.courses.items():
+        for course, grade in self.students[student].courses.items():
             if grade in passing_grades:
                 passed_courses.add(course)
         if len(elective.intersection(passed_courses)) > 0:
@@ -132,17 +135,16 @@ class School():
             elective_remaining = elective
         return(passed_courses, required.difference(passed_courses), elective_remaining)
 
-
     def student_table(self):
         """Get pretty table as output for students"""
         print()
         print("Student Summary:")
-        header = ["CWID", "Name", "Major", "Courses Completed w/ grade >= C", "Remaining Required", "Remaining Electives"]
+        header = ["CWID", "Name", "Major", "Courses Completed Satisfactorily", "Remaining Required", "Remaining Electives"]
         x = PT(header)
-        for item in self.students:
+        for item in self.students.keys():
             # First get difference between required and completed classes passed satisfactorily (grade >= 'C')
             passed_courses, required_remaining, elective_remaining = self.courses_remaining(item)
-            x.add_row([str(item.CWID), str(item.name), str(item.major), sorted(passed_courses), sorted(required_remaining), sorted(elective_remaining)])
+            x.add_row([str(self.students[item].CWID), str(self.students[item].name), str(self.students[item].major), sorted(passed_courses), sorted(required_remaining), sorted(elective_remaining)])
         print(x)
         return None
 
@@ -153,10 +155,10 @@ class School():
         # decided to display 'Dept' as well, though not required by assignment
         header = ["CWID", "Name", "Dept", "Course", "Students"]
         x = PT(header)
-        for item in self.instructors:
-            class_list = list(item.courses.keys())
+        for item in self.instructors.keys():
+            class_list = list(self.instructors[item].courses.keys())
             for subject in class_list:
-                x.add_row([str(item.CWID), str(item.name), str(item.dept), subject, item.courses[subject]])
+                x.add_row([str(self.instructors[item].CWID), str(self.instructors[item].name), str(self.instructors[item].dept), subject, self.instructors[item].courses[subject]])
         print(x)
         return None
 
@@ -204,7 +206,7 @@ class Instructor():
         """Returns a string for the professor."""
         return (str(self.CWID) + " " + str(self.name) + " " + str(self.dept))
 
-    def add_student(self):
+    def add_student(self, course):
         """Method to add a student to a course count."""
         self.courses[course] += 1
         return
@@ -257,10 +259,7 @@ def main():
 
 if __name__ == "__main__":
     # call main program
-    # main()
-
-    # now call the unit tests
-    unittest.main(exit=False, verbosity=2)
+    main()
 
 
 # End of file

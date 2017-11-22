@@ -257,10 +257,7 @@ def main():
 
 if __name__ == "__main__":
     # call main program
-    # main()
-
-    # now call the unit tests
-    unittest.main(exit=False, verbosity=2)
+    main()
 
 
 # End of file
