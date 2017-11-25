@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<h2>{{ title }}</h2>
+<h3> {{ table_title }}</h3>
+<table border="1">
+    {% for x in range(size) %}
+        {% for y in range(size) %}
+            <tr>
+                <td>{{ board.[x,y] }}</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+</table>
+{% endblock %}
