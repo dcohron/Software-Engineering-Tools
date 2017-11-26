@@ -15,21 +15,21 @@ Brief:      Tic Tac Toe rendered to the web.
 from flask import Flask, request, render_template
 import random
 import itertools
+from collections import defaultdict
 from prettytable import PrettyTable as PT
 
 # app = Flask(__name__)
 
 class TTTGame():
     """Class to contain data structures and methods for Tic Tac Toe game."""
-    states = ('X', 'O', '_')
+    STATES = ('X', 'O', '_')
 
     def __init__(self, size):
         """Generates initial board state."""
         self.size = size
         self.board = [[0] * self.size for i in range(self.size)]
         for x, y in itertools.product(range(self.size), range(self.size)):
-            self.board[x][y] = random.choice(self.states)
-        return None
+            self.board[x][y] = random.choice(self.STATES)
 
     def __str__(self):
         board_rep = ""
@@ -62,8 +62,8 @@ class TTTGame():
             for y in range(self.size):
                 z_list.append(self.board[x][y])
             z_list = [str(x+1)] + z_list
-            print(z_list, type(z_list))
-            z.add_row = (z_list)
+            # print(z_list, type(z_list))
+            z.add_row(z_list)
         # print(z.get_string())
         print()
         print("Pretty Table:")
@@ -73,34 +73,58 @@ class TTTGame():
     def check_win(self):
         """Function to determine if there is a win on the board."""
         # check row win
+        for a in range(self.size):
+            win_dict = defaultdict(int)
+            for b in range(self.size):
+                if self.board[a][b] == "_":
+                    continue
+                win_dict[self.board[a][b]] += 1
+            try:
+                if win_dict[max(win_dict, key=win_dict.get)] == self.size:
+                    return (True, 'Row ' + str(a+1))
+            except ValueError:
+                continue
 
         # check column win
+        for b in range(self.size):
+            win_dict = defaultdict(int)
+            for a in range(self.size):
+                if self.board[a][b] == "_":
+                    continue
+                win_dict[self.board[a][b]] += 1
+            try:
+                if win_dict[max(win_dict, key=win_dict.get)] == self.size:
+                    return (True, 'Column ' + str(b+1))
+            except ValueError:
+                continue
 
         # check left to right diagonal win
+        win_dict = defaultdict(int)
+        for a in range(self.size):
+            if self.board[a][a] == "_":
+                break
+            win_dict[self.board[a][a]] += 1
+        try:
+            if win_dict[max(win_dict, key=win_dict.get)] == self.size:
+                return (True, 'Diagonal- top left to bottom right')
+        except ValueError:
+            # do nothing, continue to next test
 
         # check right to left diagonal win
-
-        return False
-
-    # def check(self, x, y):
-    #     """Function iterates over cells looking for win."""
-    #     previous_cell_state = None
-    #     for a in range(x):
-    #         for b in range(y):
-    #             cell_state = self.board[a, b]
-    #             if previous_cell_state == None:
-    #                 previous_cell_state = cell_state
-    #             elif cell_state != previous_cell_state:
-    #                 break
-    #             elif b == self.size-1:
-    #                 return True
-    #     return False
-    #
-    # def check_diag(self, flag):
-    #     """Function to check diagonal wins. Flag tells whether to start
-    #     at position 0,0 (top left) or N, 0 (bottom left)."""
-    #     pass
-    #     return
+            win_dict = defaultdict(int)
+            for a in range(self.size-1, -1, -1):
+                if self.board[a][self.size-(a+1)] == "_":
+                    break
+                win_dict[self.board[a][self.size-(a+1)]] += 1
+            try:
+                if win_dict[max(win_dict, key=win_dict.get)] == self.size:
+                    return (True, 'Diagonal- bottom left to top right')
+            except ValueError:
+                pass
+                # do nothing, finished test conditions for a win
+        # if have not returned already from finding a win condition
+        # now must return False for no win condition found
+        return (False, 'No winner')
 
 
 def get_size_input():
@@ -112,7 +136,7 @@ def get_size_input():
     print()
     input_size = input("Please enter a single integer for size of board ('3' will yield 3x3 board): ")
 
-    # now check that file exists, else recursive call
+    # now check that input was correct, else recursive call
     if not type(int(input_size)) == int:
         print("ERROR: Not an integer, please try again.")
         input_size = get_size()
@@ -130,7 +154,7 @@ def main():
 
     # initialize game board
     board = TTTGame(board_size)
-    print(board)
+    # print(board)
     print()
 
     # output results to console
@@ -141,8 +165,9 @@ def main():
     # board.display_board()
 
     # check for win on board
-    if board.check_win():
-        print("We have a winner!")
+    win_bool, location = board.check_win()
+    if win_bool:
+        print("We have a winner at", location)
     else:
         print("No winner this time.")
 
